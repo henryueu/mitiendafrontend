@@ -29,6 +29,17 @@ const inputProvNumero = document.getElementById('prov-numero');
 const inputProvColonia = document.getElementById('prov-colonia');
 const inputProvCP = document.getElementById('prov-cp');
 
+// ----- VARIABLE GLOBAL DEL CARRITO -----
+let carrito = [];
+
+// ----- NUEVOS ELEMENTOS DEL PUNTO DE VENTA -----
+const selectVentaProducto = document.getElementById('venta-producto');
+const inputVentaCantidad = document.getElementById('venta-cantidad');
+const btnAgregarCarrito = document.getElementById('btn-agregar-carrito');
+const listaCarrito = document.getElementById('lista-carrito');
+const spanTotal = document.getElementById('carrito-total');
+const btnRegistrarVenta = document.getElementById('btn-registrar-venta');
+
 // ----- FUNCIÓN PARA OBTENER Y MOSTRAR CATEGORÍAS -----
 async function cargarCategorias() {
     try {
@@ -138,6 +149,13 @@ async function cargarProductos() {
         const productos = await respuesta.json();
 
         listaProductos.innerHTML = '';
+        selectVentaProducto.innerHTML = ''; // Limpiar dropdown de ventas
+
+        // Llenar dropdown de ventas
+        const opcionVentaDefecto = document.createElement('option');
+        opcionVentaDefecto.value = "";
+        opcionVentaDefecto.textContent = "Selecciona un producto";
+        selectVentaProducto.appendChild(opcionVentaDefecto);
 
         if (productos.length === 0) {
             listaProductos.innerHTML = '<li class="list-group-item">No hay productos registrados.</li>';
@@ -157,6 +175,18 @@ async function cargarProductos() {
                 <span class="badge bg-primary rounded-pill">Stock: ${producto.stock}</span>
             `;
             listaProductos.appendChild(li);
+
+            // 2. Llenar el dropdown de VENTAS (si hay stock)
+            if (producto.stock > 0) {
+                const opcion = document.createElement('option');
+                opcion.value = producto.id_producto;
+                // Guardamos datos clave en el 'dataset' del elemento
+                opcion.dataset.precio = producto.precio_venta;
+                opcion.dataset.nombre = producto.nombre_producto;
+                opcion.textContent = `${producto.nombre_producto} ($${producto.precio_venta}) - Stock: ${producto.stock}`;
+                selectVentaProducto.appendChild(opcion);
+            }
+
         });
 
     } catch (error) {
@@ -308,6 +338,114 @@ async function agregarProveedor(event) {
 
 // ----- ASIGNAR LA FUNCIÓN AL NUEVO BOTÓN -----
 btnAgregarProveedor.addEventListener('click', agregarProveedor);
+
+// ----- FUNCIÓN 3: LÓGICA DEL CARRITO -----
+
+// Función para dibujar el carrito en el HTML
+function actualizarVistaCarrito() {
+    listaCarrito.innerHTML = ''; // Limpiar la lista
+    let total = 0;
+
+    if (carrito.length === 0) {
+        listaCarrito.innerHTML = '<li class="list-group-item">Carrito vacío</li>';
+        spanTotal.textContent = '0.00';
+        return;
+    }
+
+    carrito.forEach(item => {
+        const subtotal = item.precio_unitario * item.cantidad;
+        total += subtotal;
+
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `
+            ${item.nombre} (${item.cantidad} x $${item.precio_unitario})
+            <span class="float-end">$${subtotal.toFixed(2)}</span>
+        `;
+        listaCarrito.appendChild(li);
+    });
+
+    spanTotal.textContent = total.toFixed(2); // Poner el total con 2 decimales
+}
+
+// Función para el botón "Añadir al Carrito"
+function agregarAlCarrito() {
+    const selectedOption = selectVentaProducto.options[selectVentaProducto.selectedIndex];
+
+    // 1. Validar que se seleccionó un producto
+    if (!selectedOption.value) {
+        alert('Por favor, selecciona un producto.');
+        return;
+    }
+
+    // 2. Obtener los datos del producto desde el dropdown
+    const id_producto = parseInt(selectedOption.value);
+    const nombre = selectedOption.dataset.nombre;
+    const precio_unitario = parseFloat(selectedOption.dataset.precio);
+    const cantidad = parseInt(inputVentaCantidad.value);
+
+    // 3. (Opcional: verificar si el producto ya está en el carrito y sumarlo)
+    // Por ahora, solo lo agregamos
+    carrito.push({ id_producto, nombre, precio_unitario, cantidad });
+
+    // 4. Actualizar la vista
+    actualizarVistaCarrito();
+
+    // 5. Resetear los campos
+    selectVentaProducto.value = "";
+    inputVentaCantidad.value = "1";
+}
+
+// Función para el botón "Registrar Venta"
+async function registrarVenta() {
+    if (carrito.length === 0) {
+        alert('El carrito está vacío. Añade productos antes de registrar la venta.');
+        return;
+    }
+
+    // 1. Calcular el total
+    const monto_total = carrito.reduce((total, item) => {
+        return total + (item.precio_unitario * item.cantidad);
+    }, 0);
+
+    btnRegistrarVenta.disabled = true;
+    btnRegistrarVenta.textContent = 'Registrando...';
+
+    try {
+        // 2. Enviar el carrito y el total al backend
+        const respuesta = await fetch(`${API_URL}/api/ventas`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ carrito, monto_total }),
+        });
+
+        if (!respuesta.ok) {
+            const errorData = await respuesta.json();
+            throw new Error(errorData.error || 'Error del servidor');
+        }
+
+        // 3. Si todo salió bien
+        alert('¡Venta registrada con éxito!');
+
+        // 4. Limpiar el estado
+        carrito = []; // Vaciar el carrito
+        actualizarVistaCarrito(); // Actualizar la vista (mostrará "carrito vacío")
+
+        // 5. Recargar productos (¡para ver el nuevo stock!)
+        await cargarProductos();
+
+    } catch (error) {
+        console.error('Error al registrar la venta:', error);
+        alert('Error al registrar la venta: ' + error.message);
+    } finally {
+        btnRegistrarVenta.disabled = false;
+        btnRegistrarVenta.textContent = 'Registrar Venta';
+    }
+}
+
+// ----- ASIGNAR LAS FUNCIONES A LOS NUEVOS BOTONES -----
+btnAgregarCarrito.addEventListener('click', agregarAlCarrito);
+btnRegistrarVenta.addEventListener('click', registrarVenta);
 
 // ----- MODIFICAR EL 'DOMContentLoaded' -----
 // Ahora cargamos TRES cosas al iniciar
