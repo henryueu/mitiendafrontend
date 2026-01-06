@@ -9,13 +9,17 @@
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-dark bg-dark">
+    <nav class="navbar navbar-dark bg-dark mb-4">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1">🛒 Tienda de Don José</span>
+            <button class="btn btn-outline-light btn-sm" id="btn-logout">
+                Cerrar Sesión
+            </button>
         </div>
     </nav>
 
     <div class="container mt-4">
+        <div id="admin-panel">
         <div class="row">
             <div class="col-md-6">
                 <h2>Categorías de Productos</h2>
@@ -28,7 +32,7 @@
 
             <div class="col-md-6">
                 <h2>Agregar Nueva Categoría</h2>
-                <div class="card p-3">
+                <div class="card p-3 admin-form">
                     <div class="mb-3">
                         <label for="nombre-categoria" class="form-label">Nombre:</label>
                         <input type="text" class="form-control" id="nombre-categoria" placeholder="Ej: Lácteos">
@@ -55,7 +59,7 @@
 
         <div class="col-md-6">
             <h2>Agregar Nuevo Producto</h2>
-            <div class="card p-3">
+            <div class="card p-3 admin-form">
                 <div class="mb-3">
                     <label for="producto-nombre" class="form-label">Nombre:</label>
                     <input type="text" class="form-control" id="producto-nombre" placeholder="Ej: Leche Entera">
@@ -100,7 +104,7 @@
 
         <div class="col-md-6">
             <h2>Agregar Nuevo Proveedor</h2>
-            <div class="card p-3">
+            <div class="card p-3 admin-form">
                 <div class="mb-3">
                     <label for="prov-nombre" class="form-label">Nombre del Proveedor:</label>
                     <input type="text" class="form-control" id="prov-nombre" placeholder="Ej: Sabritas S.A. de C.V.">
@@ -134,42 +138,43 @@
             </div>
         </div>
     </div>
+    </div>
     <hr class="my-4">
-
-    <div class="row">
-        <h2>Punto de Venta</h2>
+    <div id="pos-section">
+        <div class="row">
+            <h2>Punto de Venta</h2>
         
-        <div class="col-md-5">
-            <div class="card p-3">
-                <div class="mb-3">
-                    <label for="venta-producto" class="form-label">Producto:</label>
-                    <select class="form-select" id="venta-producto">
-                        <option value="">Cargando productos...</option>
+            <div class="col-md-5">
+                <div class="card p-3">
+                    <div class="mb-3">
+                        <label for="venta-producto" class="form-label">Producto:</label>
+                        <select class="form-select" id="venta-producto">
+                            <option value="">Cargando productos...</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="venta-cantidad" class="form-label">Cantidad:</label>
+                        <input type="number" class="form-control" id="venta-cantidad" value="1" min="1">
+                    </div>
+                    <button class="btn btn-primary" id="btn-agregar-carrito">
+                        Añadir al Carrito
+                    </button>
                 </div>
-                <div class="mb-3">
-                    <label for="venta-cantidad" class="form-label">Cantidad:</label>
-                    <input type="number" class="form-control" id="venta-cantidad" value="1" min="1">
-                </div>
-                <button class="btn btn-primary" id="btn-agregar-carrito">
-                    Añadir al Carrito
+            </div>
+
+            <div class="col-md-7">
+                <h3>Carrito de Compra</h3>
+                <ul class="list-group mb-3" id="lista-carrito">
+                    <li class="list-group-item">Carrito vacío</li>
+                </ul>
+                <h4>Total: $ <span id="carrito-total">0.00</span></h4>
+                <button class="btn btn-success btn-lg w-100" id="btn-registrar-venta">
+                    Registrar Venta
                 </button>
             </div>
         </div>
-
-        <div class="col-md-7">
-            <h3>Carrito de Compra</h3>
-            <ul class="list-group mb-3" id="lista-carrito">
-                <li class="list-group-item">Carrito vacío</li>
-            </ul>
-            <h4>Total: $ <span id="carrito-total">0.00</span></h4>
-            <button class="btn btn-success btn-lg w-100" id="btn-registrar-venta">
-                Registrar Venta
-            </button>
-        </div>
     </div>
 </div>
-
     <script src="app.js"></script>
 </body>
 </html>

@@ -3,6 +3,16 @@
 // 1. Pon la URL de tu API desplegada en Render
 const API_URL = 'https://mitienda-ibgx.onrender.com'; 
 
+const token = localStorage.getItem('jwt_token');
+const rolUsuario = localStorage.getItem('user_rol');
+
+// REDIRECCIONAMIENTO: Si no hay token, ve al login
+if (!token && window.location.pathname !== '/login.html') {
+    window.location.href = 'login.html';
+} else if (token && window.location.pathname === '/login.html') {
+    window.location.href = 'index.html'; // Si ya estás logueado, ve al inicio
+}
+
 // 2. Seleccionar elementos del HTML
 const listaCategorias = document.getElementById('lista-categorias');
 
@@ -140,7 +150,9 @@ async function agregarCategoria(event) {
 
 // ----- ASIGNAR LA FUNCIÓN AL BOTÓN -----
 // Cuando el botón 'btn-agregar' reciba un clic, ejecuta la función agregarCategoria
-btnAgregar.addEventListener('click', agregarCategoria);
+if (btnAgregar) {
+    btnAgregar.addEventListener('click', agregarCategoria);
+}
 
 // ----- FUNCIÓN PARA OBTENER Y MOSTRAR PRODUCTOS -----
 async function cargarProductos() {
@@ -246,8 +258,9 @@ async function agregarProducto(event) {
 }
 
 // ----- ASIGNAR LA FUNCIÓN AL NUEVO BOTÓN -----
-btnAgregarProducto.addEventListener('click', agregarProducto);
-
+if (btnAgregarProducto) {
+    btnAgregarProducto.addEventListener('click', agregarProducto);
+}
 // ----- FUNCIÓN PARA OBTENER Y MOSTRAR PROVEEDORES -----
 async function cargarProveedores() {
     try {
@@ -337,7 +350,9 @@ async function agregarProveedor(event) {
 }
 
 // ----- ASIGNAR LA FUNCIÓN AL NUEVO BOTÓN -----
-btnAgregarProveedor.addEventListener('click', agregarProveedor);
+if (btnAgregarProveedor) {
+    btnAgregarProveedor.addEventListener('click', agregarProveedor);
+}
 
 // ----- FUNCIÓN 3: LÓGICA DEL CARRITO -----
 
@@ -444,13 +459,145 @@ async function registrarVenta() {
 }
 
 // ----- ASIGNAR LAS FUNCIONES A LOS NUEVOS BOTONES -----
-btnAgregarCarrito.addEventListener('click', agregarAlCarrito);
-btnRegistrarVenta.addEventListener('click', registrarVenta);
+if (btnAgregarCarrito) {
+    btnAgregarCarrito.addEventListener('click', agregarAlCarrito);
+}
+if (btnRegistrarVenta) {
+    btnRegistrarVenta.addEventListener('click', registrarVenta);
+}
+
+// ----- LÓGICA DE LOGIN (solo se ejecuta en login.html) -----
+const btnLogin = document.getElementById('btn-login');
+
+// Usamos 'click' en lugar de 'submit' porque quitamos el form del HTML
+if (btnLogin) {
+    btnLogin.addEventListener('click', async () => {
+        
+        // 1. Obtener valores de los inputs
+        const username = document.getElementById('username-input').value;
+        const password = document.getElementById('password-input').value;
+        const errorMensaje = document.getElementById('mensaje-error');
+
+        // 2. Feedback visual (deshabilitar botón mientras carga)
+        btnLogin.disabled = true;
+        btnLogin.textContent = 'Verificando...';
+        if (errorMensaje) errorMensaje.classList.add('d-none');
+
+        try {
+            // 3. Llamar a la API
+            const response = await fetch(`${API_URL}/api/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Fallo en la autenticación.');
+            }
+
+            // 4. Éxito: Guardar token y redirigir
+            localStorage.setItem('jwt_token', data.token);
+            localStorage.setItem('user_rol', data.user.rol);
+            window.location.href = 'index.html';
+
+        } catch (error) {
+            // 5. Error: Mostrar mensaje en el cuadro de alerta
+            if (errorMensaje) {
+                errorMensaje.textContent = error.message;
+                errorMensaje.classList.remove('d-none');
+            } else {
+                alert(error.message);
+            }
+        } finally {
+            // 6. Restaurar botón
+            btnLogin.disabled = false;
+            btnLogin.textContent = 'Iniciar Sesión';
+        }
+    });
+}
 
 // ----- MODIFICAR EL 'DOMContentLoaded' -----
-// Ahora cargamos TRES cosas al iniciar
 document.addEventListener('DOMContentLoaded', () => {
-    cargarCategorias(); 
-    cargarProductos();  
-    cargarProveedores(); // <-- AÑADE ESTA LÍNEA
+    const listaExistente = document.getElementById('lista-categorias');
+    
+    // Solo ejecutar si estamos en el Dashboard (index.html)
+    if (listaExistente) {
+        
+        // 1. Obtener elementos clave
+        const rolUsuario = localStorage.getItem('user_rol');
+        const adminPanel = document.getElementById('admin-panel');
+        const posSection = document.getElementById('pos-section'); // La sección de ventas
+        const adminForms = document.querySelectorAll('.admin-form'); // Los formularios de agregar (con la clase que añadiste)
+        
+        // Función auxiliar para mostrar/ocultar solo los formularios de agregar
+        const toggleForms = (show) => {
+            adminForms.forEach(form => form.style.display = show ? 'block' : 'none');
+        };
+
+        // 2. Lógica de Permisos (Switch por Rol)
+        switch (rolUsuario) {
+            
+            case 'Administrador':
+                // VE TODO
+                if (adminPanel) adminPanel.style.display = 'block';
+                if (posSection) posSection.style.display = 'block';
+                toggleForms(true); // Muestra formularios
+                
+                cargarCategorias(); 
+                cargarProductos();  
+                cargarProveedores();
+                break;
+
+            case 'Cajero':
+                // SOLO VE PUNTO DE VENTA
+                if (adminPanel) adminPanel.style.display = 'none'; // Oculta listas
+                if (posSection) posSection.style.display = 'block'; // Muestra ventas
+                
+                cargarProductos(); // Solo carga productos para el dropdown
+                break;
+
+            case 'Inventario':
+                // VE PANEL ADMIN (FORMULARIOS), PERO NO PUNTO DE VENTA
+                if (adminPanel) adminPanel.style.display = 'block';
+                if (posSection) posSection.style.display = 'none'; // Oculta ventas
+                toggleForms(true); // Muestra formularios para agregar cosas
+
+                cargarCategorias(); 
+                cargarProductos();  
+                cargarProveedores();
+                break;
+
+            case 'Lector':
+                // VE LISTAS, PERO NI FORMULARIOS NI VENTAS
+                if (adminPanel) adminPanel.style.display = 'block'; // Muestra el panel general
+                if (posSection) posSection.style.display = 'none';  // Oculta ventas
+                toggleForms(false); // ¡OCULTA LOS FORMULARIOS! (Aquí está la magia)
+
+                cargarCategorias(); 
+                cargarProductos();  
+                cargarProveedores();
+                break;
+
+            default:
+                console.warn('Rol desconocido:', rolUsuario);
+                // Por seguridad, ocultamos todo si el rol es raro
+                if (adminPanel) adminPanel.style.display = 'none';
+                if (posSection) posSection.style.display = 'none';
+                break;
+        }
+
+        console.log('Usuario logueado con rol:', rolUsuario);
+    }
 });
+
+// (Mantén tu código del botón Logout que ya tenías al final, ese está bien)
+const btnLogout = document.getElementById('btn-logout');
+if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('user_rol');
+        window.location.href = 'login.html';
+    });
+}
