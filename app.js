@@ -1,11 +1,13 @@
 const API_URL = 'https://mitienda-ibgx.onrender.com'; 
 const token = localStorage.getItem('jwt_token');
 const rolUsuario = localStorage.getItem('user_rol');
-
-if (!token && window.location.pathname !== '/login.html') {
-    window.location.href = 'login.html';
-} else if (token && window.location.pathname === '/login.html') {
-    window.location.href = 'index.html'; 
+const isGitHubPages = window.location.hostname.includes('github.io');
+if (!isGitHubPages) {
+    if (!token && !window.location.pathname.endsWith('login.html')) {
+        window.location.href = 'login.html';
+    } else if (token && window.location.pathname.endsWith('login.html')) {
+        window.location.href = 'index.html'; 
+    }
 }
 
 const listaCategorias = document.getElementById('lista-categorias');
@@ -496,29 +498,26 @@ if (btnLogin) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const listaExistente = document.getElementById('lista-categorias');
-    
 
     if (listaExistente) {
         
 
-        const rolUsuario = localStorage.getItem('user_rol');
+        const currentRol = isGitHubPages ? 'Administrador' : localStorage.getItem('user_rol');
         const adminPanel = document.getElementById('admin-panel');
         const posSection = document.getElementById('pos-section');
         const adminForms = document.querySelectorAll('.admin-form'); 
         
-      
         const toggleForms = (show) => {
             adminForms.forEach(form => form.style.display = show ? 'block' : 'none');
         };
 
-        switch (rolUsuario) {
+        switch (currentRol) {
             
             case 'Administrador':
             
                 if (adminPanel) adminPanel.style.display = 'block';
                 if (posSection) posSection.style.display = 'block';
                 toggleForms(true);
-                
                 cargarCategorias(); 
                 cargarProductos();  
                 cargarProveedores();
