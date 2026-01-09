@@ -2,10 +2,13 @@ const API_URL = 'https://mitienda-ibgx.onrender.com';
 const token = localStorage.getItem('jwt_token');
 const rolUsuario = localStorage.getItem('user_rol');
 const isGitHubPages = window.location.hostname.includes('github.io');
+
 if (!isGitHubPages) {
-    if (!token && !window.location.pathname.endsWith('login.html')) {
+    const isLoginPage = window.location.pathname.endsWith('login.html') || window.location.pathname === '/';
+    
+    if (!token && !isLoginPage) {
         window.location.href = 'login.html';
-    } else if (token && window.location.pathname.endsWith('login.html')) {
+    } else if (token && isLoginPage) {
         window.location.href = 'index.html'; 
     }
 }

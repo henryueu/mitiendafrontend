@@ -2,10 +2,9 @@
 <html lang="es">
 <head>
     <script>
-    
-    if (window.location.hostname.includes('github.io')) {
-        window.location.href = 'index.html';
-    }
+        if (window.location.hostname.includes('github.io')) {
+            window.location.href = 'index.html';
+        }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,6 +55,8 @@
     </div>
 
     <script>
+        const API_URL = 'https://mitienda-ibgx.onrender.com';
+
         function entrarDirecto() {
             window.location.href = 'index.html';
         }
@@ -66,16 +67,20 @@
             const mensajeError = document.getElementById('mensaje-error');
 
             try {
-                const response = await fetch('/login', {
+                const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
 
+                const data = await response.json();
+
                 if (response.ok) {
+                    localStorage.setItem('jwt_token', data.token);
+                    localStorage.setItem('user_rol', data.user.rol);
                     window.location.href = 'index.html';
                 } else {
-                    mensajeError.textContent = 'Usuario o contraseña incorrectos';
+                    mensajeError.textContent = data.error || 'Usuario o contraseña incorrectos';
                     mensajeError.classList.remove('d-none');
                 }
             } catch (error) {
