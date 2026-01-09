@@ -49,11 +49,34 @@
         </div>
     </div>
 
-    <script src="app.js"></script> 
     <script>
         function entrarDirecto() {
             window.location.href = 'index.html';
         }
+
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const username = document.getElementById('username-input').value;
+            const password = document.getElementById('password-input').value;
+            const mensajeError = document.getElementById('mensaje-error');
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    window.location.href = 'index.html';
+                } else {
+                    mensajeError.textContent = 'Usuario o contraseña incorrectos';
+                    mensajeError.classList.remove('d-none');
+                }
+            } catch (error) {
+                mensajeError.textContent = 'Error de conexión. En GitHub Pages use Acceso Directo.';
+                mensajeError.classList.remove('d-none');
+            }
+        });
     </script>
 </body>
 </html>
