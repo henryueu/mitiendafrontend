@@ -1,27 +1,19 @@
-
-// ----- CONFIGURACIÓN -----
-// 1. Pon la URL de tu API desplegada en Render
 const API_URL = 'https://mitienda-ibgx.onrender.com'; 
-
 const token = localStorage.getItem('jwt_token');
 const rolUsuario = localStorage.getItem('user_rol');
 
-// REDIRECCIONAMIENTO: Si no hay token, ve al login
 if (!token && window.location.pathname !== '/login.html') {
     window.location.href = 'login.html';
 } else if (token && window.location.pathname === '/login.html') {
-    window.location.href = 'index.html'; // Si ya estás logueado, ve al inicio
+    window.location.href = 'index.html'; 
 }
 
-// 2. Seleccionar elementos del HTML
 const listaCategorias = document.getElementById('lista-categorias');
 
-// --- AÑADE ESTAS 3 LÍNEAS ---
+
 const btnAgregar = document.getElementById('btn-agregar');
 const inputNombre = document.getElementById('nombre-categoria');
 const inputDesc = document.getElementById('desc-categoria');
-// ----------------------------
-// ----- NUEVOS ELEMENTOS DE PRODUCTOS -----
 const listaProductos = document.getElementById('lista-productos');
 const btnAgregarProducto = document.getElementById('btn-agregar-producto');
 const inputProductoNombre = document.getElementById('producto-nombre');
@@ -29,7 +21,6 @@ const inputProductoMarca = document.getElementById('producto-marca');
 const selectProductoCategoria = document.getElementById('producto-categoria');
 const inputProductoPrecio = document.getElementById('producto-precio');
 const inputProductoStock = document.getElementById('producto-stock');
-// ----- NUEVOS ELEMENTOS DE PROVEEDORES -----
 const listaProveedores = document.getElementById('lista-proveedores');
 const btnAgregarProveedor = document.getElementById('btn-agregar-proveedor');
 const inputProvNombre = document.getElementById('prov-nombre');
@@ -39,10 +30,8 @@ const inputProvNumero = document.getElementById('prov-numero');
 const inputProvColonia = document.getElementById('prov-colonia');
 const inputProvCP = document.getElementById('prov-cp');
 
-// ----- VARIABLE GLOBAL DEL CARRITO -----
 let carrito = [];
 
-// ----- NUEVOS ELEMENTOS DEL PUNTO DE VENTA -----
 const selectVentaProducto = document.getElementById('venta-producto');
 const inputVentaCantidad = document.getElementById('venta-cantidad');
 const btnAgregarCarrito = document.getElementById('btn-agregar-carrito');
@@ -50,17 +39,17 @@ const listaCarrito = document.getElementById('lista-carrito');
 const spanTotal = document.getElementById('carrito-total');
 const btnRegistrarVenta = document.getElementById('btn-registrar-venta');
 
-// ----- FUNCIÓN PARA OBTENER Y MOSTRAR CATEGORÍAS -----
+// FUNCIÓN PARA OBTENER Y MOSTRAR CATEGORÍAS
 async function cargarCategorias() {
     try {
         const respuesta = await fetch(`${API_URL}/api/categorias`);
         const categorias = await respuesta.json();
 
-        // Limpiar ambos elementos
+        
         listaCategorias.innerHTML = '';
-        selectProductoCategoria.innerHTML = ''; // Limpiar el dropdown
+        selectProductoCategoria.innerHTML = ''; 
 
-        // Llenar el dropdown de productos
+        
         const opcionDefecto = document.createElement('option');
         opcionDefecto.value = "";
         opcionDefecto.textContent = "Selecciona una categoría";
@@ -71,16 +60,16 @@ async function cargarCategorias() {
         }
 
        categorias.forEach(categoria => {
-            // 1. Llenar la lista de la izquierda
+            
             const li = document.createElement('li');
             li.className = 'list-group-item';
             li.textContent = categoria.nombre_categoria;
             listaCategorias.appendChild(li);
 
-            // 2. Llenar el menú desplegable (select)
+            
             const opcion = document.createElement('option');
-            opcion.value = categoria.id_categoria; // Guardamos el ID
-            opcion.textContent = categoria.nombre_categoria; // Mostramos el Nombre
+            opcion.value = categoria.id_categoria; 
+            opcion.textContent = categoria.nombre_categoria; 
             selectProductoCategoria.appendChild(opcion);
         });
 
@@ -90,80 +79,73 @@ async function cargarCategorias() {
     }
 }
 
-// ----- EJECUTAR LA FUNCIÓN AL CARGAR LA PÁGINA -----
-// 'DOMContentLoaded' espera a que todo el HTML esté listo
 document.addEventListener('DOMContentLoaded', () => {
     cargarCategorias();
 });
 
-// ----- FUNCIÓN PARA AGREGAR UNA NUEVA CATEGORÍA -----
+// FUNCIÓN PARA AGREGAR UNA NUEVA CATEGORÍA
 async function agregarCategoria(event) {
-  // 1. Evitar que el formulario recargue la página
+
   event.preventDefault();
 
-  // 2. Obtener los valores de los inputs
   const nombre = inputNombre.value;
   const descripcion = inputDesc.value;
 
-  // 3. Validar que el nombre no esté vacío
   if (!nombre) {
     alert('Por favor, escribe un nombre para la categoría.');
     return;
   }
 
-  // 4. Deshabilitar el botón para evitar doble clic
   btnAgregar.disabled = true;
   btnAgregar.textContent = 'Agregando...';
 
   try {
-    // 5. Enviar los datos al Backend (API) usando fetch con POST
+
     const respuesta = await fetch(`${API_URL}/api/categorias`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json', // Avisar que enviaremos JSON
+        'Content-Type': 'application/json', 
       },
-      body: JSON.stringify({ nombre, descripcion }), // Convertir datos a string JSON
+      body: JSON.stringify({ nombre, descripcion }), 
     });
 
     if (!respuesta.ok) {
-      // Si el backend mandó un error (ej. 400 o 500)
+      
       const errorData = await respuesta.json();
       throw new Error(errorData.error || 'Error del servidor');
     }
 
-    // 6. Si todo salió bien, limpiar los campos
+    
     inputNombre.value = '';
     inputDesc.value = '';
 
-    // 7. Recargar la lista de categorías (¡para ver la nueva!)
+    
     await cargarCategorias();
 
   } catch (error) {
     console.error('Error al agregar categoría:', error);
     alert('Error al agregar categoría: ' + error.message);
   } finally {
-    // 8. Volver a habilitar el botón, haya o no error
+    
     btnAgregar.disabled = false;
     btnAgregar.textContent = 'Agregar Categoría';
   }
 }
 
-// ----- ASIGNAR LA FUNCIÓN AL BOTÓN -----
-// Cuando el botón 'btn-agregar' reciba un clic, ejecuta la función agregarCategoria
 if (btnAgregar) {
     btnAgregar.addEventListener('click', agregarCategoria);
 }
 
-// ----- FUNCIÓN PARA OBTENER Y MOSTRAR PRODUCTOS -----
+// FUNCIÓN PARA OBTENER Y MOSTRAR PRODUCTO
 async function cargarProductos() {
     try {
         const respuesta = await fetch(`${API_URL}/api/productos`);
         const productos = await respuesta.json();
 
         listaProductos.innerHTML = '';
-        selectVentaProducto.innerHTML = ''; // Limpiar dropdown de ventas
+        selectVentaProducto.innerHTML = ''; 
 
-        // Llenar dropdown de ventas
+        
         const opcionVentaDefecto = document.createElement('option');
         opcionVentaDefecto.value = "";
         opcionVentaDefecto.textContent = "Selecciona un producto";
@@ -178,7 +160,7 @@ async function cargarProductos() {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-            // Usamos <span> para formatear
+            
             li.innerHTML = `
                 <div>
                     <span class="fw-bold">${producto.nombre_producto}</span>
@@ -188,11 +170,11 @@ async function cargarProductos() {
             `;
             listaProductos.appendChild(li);
 
-            // 2. Llenar el dropdown de VENTAS (si hay stock)
+            
             if (producto.stock > 0) {
                 const opcion = document.createElement('option');
                 opcion.value = producto.id_producto;
-                // Guardamos datos clave en el 'dataset' del elemento
+                
                 opcion.dataset.precio = producto.precio_venta;
                 opcion.dataset.nombre = producto.nombre_producto;
                 opcion.textContent = `${producto.nombre_producto} ($${producto.precio_venta}) - Stock: ${producto.stock}`;
@@ -207,16 +189,15 @@ async function cargarProductos() {
     }
 }
 
-// ----- FUNCIÓN PARA AGREGAR UN NUEVO PRODUCTO -----
+// FUNCIÓN PARA AGREGAR UN NUEVO PRODUCTO 
 async function agregarProducto(event) {
     event.preventDefault();
 
-    // Obtener valores, convirtiendo a número los necesarios
     const nombre = inputProductoNombre.value;
     const marca = inputProductoMarca.value;
     const precio = parseFloat(inputProductoPrecio.value);
     const stock = parseInt(inputProductoStock.value);
-    const categoria_id = parseInt(selectProductoCategoria.value); // El ID de la categoría seleccionada
+    const categoria_id = parseInt(selectProductoCategoria.value); 
 
     if (!nombre || !precio || !stock || !categoria_id) {
         alert('Por favor, completa todos los campos del producto.');
@@ -238,14 +219,14 @@ async function agregarProducto(event) {
             throw new Error(errorData.error || 'Error del servidor');
         }
 
-        // Limpiar formulario
+        
         inputProductoNombre.value = '';
         inputProductoMarca.value = '';
         inputProductoPrecio.value = '';
         inputProductoStock.value = '';
-        selectProductoCategoria.value = ''; // Resetear el dropdown
+        selectProductoCategoria.value = ''; 
 
-        // Recargar la lista de productos
+       
         await cargarProductos();
 
     } catch (error) {
@@ -257,11 +238,10 @@ async function agregarProducto(event) {
     }
 }
 
-// ----- ASIGNAR LA FUNCIÓN AL NUEVO BOTÓN -----
 if (btnAgregarProducto) {
     btnAgregarProducto.addEventListener('click', agregarProducto);
 }
-// ----- FUNCIÓN PARA OBTENER Y MOSTRAR PROVEEDORES -----
+// FUNCIÓN PARA OBTENER Y MOSTRAR PROVEEDORES
 async function cargarProveedores() {
     try {
         const respuesta = await fetch(`${API_URL}/api/proveedores`);
@@ -278,10 +258,10 @@ async function cargarProveedores() {
             const li = document.createElement('li');
             li.className = 'list-group-item';
 
-            // Construir la dirección completa (solo si existen los datos)
+           
             let direccion = [prov.calle, prov.numero, prov.colonia, prov.codigo_postal]
-                              .filter(Boolean) // Elimina nulos o vacíos
-                              .join(', '); // Une con comas
+                              .filter(Boolean) 
+                              .join(', '); 
 
             li.innerHTML = `
                 <div class="fw-bold">${prov.nombre_proveedor}</div>
@@ -297,11 +277,11 @@ async function cargarProveedores() {
     }
 }
 
-// ----- FUNCIÓN PARA AGREGAR UN NUEVO PROVEEDOR -----
+// FUNCIÓN PARA AGREGAR UN NUEVO PROVEEDOR
 async function agregarProveedor(event) {
     event.preventDefault();
 
-    // 1. Recolectar todos los datos del formulario
+    
     const nombre = inputProvNombre.value;
     const telefono = inputProvTelefono.value;
     const calle = inputProvCalle.value;
@@ -329,7 +309,7 @@ async function agregarProveedor(event) {
             throw new Error(errorData.error || 'Error del servidor');
         }
 
-        // 2. Limpiar formulario
+       
         inputProvNombre.value = '';
         inputProvTelefono.value = '';
         inputProvCalle.value = '';
@@ -337,7 +317,7 @@ async function agregarProveedor(event) {
         inputProvColonia.value = '';
         inputProvCP.value = '';
 
-        // 3. Recargar la lista de proveedores
+        
         await cargarProveedores();
 
     } catch (error) {
@@ -349,16 +329,16 @@ async function agregarProveedor(event) {
     }
 }
 
-// ----- ASIGNAR LA FUNCIÓN AL NUEVO BOTÓN -----
+
 if (btnAgregarProveedor) {
     btnAgregarProveedor.addEventListener('click', agregarProveedor);
 }
 
-// ----- FUNCIÓN 3: LÓGICA DEL CARRITO -----
+
 
 // Función para dibujar el carrito en el HTML
 function actualizarVistaCarrito() {
-    listaCarrito.innerHTML = ''; // Limpiar la lista
+    listaCarrito.innerHTML = ''; 
     let total = 0;
 
     if (carrito.length === 0) {
@@ -380,45 +360,40 @@ function actualizarVistaCarrito() {
         listaCarrito.appendChild(li);
     });
 
-    spanTotal.textContent = total.toFixed(2); // Poner el total con 2 decimales
+    spanTotal.textContent = total.toFixed(2); 
 }
 
-// Función para el botón "Añadir al Carrito"
+
 function agregarAlCarrito() {
     const selectedOption = selectVentaProducto.options[selectVentaProducto.selectedIndex];
 
-    // 1. Validar que se seleccionó un producto
+   
     if (!selectedOption.value) {
         alert('Por favor, selecciona un producto.');
         return;
     }
 
-    // 2. Obtener los datos del producto desde el dropdown
     const id_producto = parseInt(selectedOption.value);
     const nombre = selectedOption.dataset.nombre;
     const precio_unitario = parseFloat(selectedOption.dataset.precio);
     const cantidad = parseInt(inputVentaCantidad.value);
 
-    // 3. (Opcional: verificar si el producto ya está en el carrito y sumarlo)
-    // Por ahora, solo lo agregamos
+
     carrito.push({ id_producto, nombre, precio_unitario, cantidad });
 
-    // 4. Actualizar la vista
     actualizarVistaCarrito();
 
-    // 5. Resetear los campos
+  
     selectVentaProducto.value = "";
     inputVentaCantidad.value = "1";
 }
 
-// Función para el botón "Registrar Venta"
 async function registrarVenta() {
     if (carrito.length === 0) {
         alert('El carrito está vacío. Añade productos antes de registrar la venta.');
         return;
     }
 
-    // 1. Calcular el total
     const monto_total = carrito.reduce((total, item) => {
         return total + (item.precio_unitario * item.cantidad);
     }, 0);
@@ -427,7 +402,7 @@ async function registrarVenta() {
     btnRegistrarVenta.textContent = 'Registrando...';
 
     try {
-        // 2. Enviar el carrito y el total al backend
+        
         const respuesta = await fetch(`${API_URL}/api/ventas`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -439,14 +414,14 @@ async function registrarVenta() {
             throw new Error(errorData.error || 'Error del servidor');
         }
 
-        // 3. Si todo salió bien
+        
         alert('¡Venta registrada con éxito!');
 
-        // 4. Limpiar el estado
-        carrito = []; // Vaciar el carrito
-        actualizarVistaCarrito(); // Actualizar la vista (mostrará "carrito vacío")
+        
+        carrito = []; 
+        actualizarVistaCarrito();
 
-        // 5. Recargar productos (¡para ver el nuevo stock!)
+     
         await cargarProductos();
 
     } catch (error) {
@@ -458,7 +433,7 @@ async function registrarVenta() {
     }
 }
 
-// ----- ASIGNAR LAS FUNCIONES A LOS NUEVOS BOTONES -----
+
 if (btnAgregarCarrito) {
     btnAgregarCarrito.addEventListener('click', agregarAlCarrito);
 }
@@ -466,25 +441,25 @@ if (btnRegistrarVenta) {
     btnRegistrarVenta.addEventListener('click', registrarVenta);
 }
 
-// ----- LÓGICA DE LOGIN (solo se ejecuta en login.html) -----
+
 const btnLogin = document.getElementById('btn-login');
 
-// Usamos 'click' en lugar de 'submit' porque quitamos el form del HTML
+
 if (btnLogin) {
     btnLogin.addEventListener('click', async () => {
         
-        // 1. Obtener valores de los inputs
+   
         const username = document.getElementById('username-input').value;
         const password = document.getElementById('password-input').value;
         const errorMensaje = document.getElementById('mensaje-error');
 
-        // 2. Feedback visual (deshabilitar botón mientras carga)
+       
         btnLogin.disabled = true;
         btnLogin.textContent = 'Verificando...';
         if (errorMensaje) errorMensaje.classList.add('d-none');
 
         try {
-            // 3. Llamar a la API
+           
             const response = await fetch(`${API_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -497,13 +472,13 @@ if (btnLogin) {
                 throw new Error(data.error || 'Fallo en la autenticación.');
             }
 
-            // 4. Éxito: Guardar token y redirigir
+         
             localStorage.setItem('jwt_token', data.token);
             localStorage.setItem('user_rol', data.user.rol);
             window.location.href = 'index.html';
 
         } catch (error) {
-            // 5. Error: Mostrar mensaje en el cuadro de alerta
+            
             if (errorMensaje) {
                 errorMensaje.textContent = error.message;
                 errorMensaje.classList.remove('d-none');
@@ -511,39 +486,38 @@ if (btnLogin) {
                 alert(error.message);
             }
         } finally {
-            // 6. Restaurar botón
+           
             btnLogin.disabled = false;
             btnLogin.textContent = 'Iniciar Sesión';
         }
     });
 }
 
-// ----- MODIFICAR EL 'DOMContentLoaded' -----
+
 document.addEventListener('DOMContentLoaded', () => {
     const listaExistente = document.getElementById('lista-categorias');
     
-    // Solo ejecutar si estamos en el Dashboard (index.html)
+
     if (listaExistente) {
         
-        // 1. Obtener elementos clave
+
         const rolUsuario = localStorage.getItem('user_rol');
         const adminPanel = document.getElementById('admin-panel');
-        const posSection = document.getElementById('pos-section'); // La sección de ventas
-        const adminForms = document.querySelectorAll('.admin-form'); // Los formularios de agregar (con la clase que añadiste)
+        const posSection = document.getElementById('pos-section');
+        const adminForms = document.querySelectorAll('.admin-form'); 
         
-        // Función auxiliar para mostrar/ocultar solo los formularios de agregar
+      
         const toggleForms = (show) => {
             adminForms.forEach(form => form.style.display = show ? 'block' : 'none');
         };
 
-        // 2. Lógica de Permisos (Switch por Rol)
         switch (rolUsuario) {
             
             case 'Administrador':
-                // VE TODO
+            
                 if (adminPanel) adminPanel.style.display = 'block';
                 if (posSection) posSection.style.display = 'block';
-                toggleForms(true); // Muestra formularios
+                toggleForms(true);
                 
                 cargarCategorias(); 
                 cargarProductos();  
@@ -551,18 +525,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
 
             case 'Cajero':
-                // SOLO VE PUNTO DE VENTA
-                if (adminPanel) adminPanel.style.display = 'none'; // Oculta listas
-                if (posSection) posSection.style.display = 'block'; // Muestra ventas
+             
+                if (adminPanel) adminPanel.style.display = 'none'; 
+                if (posSection) posSection.style.display = 'block'; 
                 
-                cargarProductos(); // Solo carga productos para el dropdown
+                cargarProductos(); 
                 break;
 
             case 'Inventario':
-                // VE PANEL ADMIN (FORMULARIOS), PERO NO PUNTO DE VENTA
+              
                 if (adminPanel) adminPanel.style.display = 'block';
-                if (posSection) posSection.style.display = 'none'; // Oculta ventas
-                toggleForms(true); // Muestra formularios para agregar cosas
+                if (posSection) posSection.style.display = 'none'; 
+                toggleForms(true); 
 
                 cargarCategorias(); 
                 cargarProductos();  
@@ -570,10 +544,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
 
             case 'Lector':
-                // VE LISTAS, PERO NI FORMULARIOS NI VENTAS
-                if (adminPanel) adminPanel.style.display = 'block'; // Muestra el panel general
-                if (posSection) posSection.style.display = 'none';  // Oculta ventas
-                toggleForms(false); // ¡OCULTA LOS FORMULARIOS! (Aquí está la magia)
+    
+                if (adminPanel) adminPanel.style.display = 'block'; 
+                if (posSection) posSection.style.display = 'none';  
+                toggleForms(false); 
 
                 cargarCategorias(); 
                 cargarProductos();  
@@ -582,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             default:
                 console.warn('Rol desconocido:', rolUsuario);
-                // Por seguridad, ocultamos todo si el rol es raro
+               
                 if (adminPanel) adminPanel.style.display = 'none';
                 if (posSection) posSection.style.display = 'none';
                 break;
@@ -592,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// (Mantén tu código del botón Logout que ya tenías al final, ese está bien)
+
 const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
     btnLogout.addEventListener('click', () => {
