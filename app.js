@@ -500,80 +500,84 @@ if (btnLogin) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    const listaExistente = document.getElementById('lista-categorias');
-
-    if (listaExistente) {
-        
-
-        const currentRol = isGitHubPages ? 'Administrador' : localStorage.getItem('user_rol');
-        const adminPanel = document.getElementById('admin-panel');
-        const posSection = document.getElementById('pos-section');
-        const adminForms = document.querySelectorAll('.admin-form'); 
-        
-        const toggleForms = (show) => {
-            adminForms.forEach(form => form.style.display = show ? 'block' : 'none');
-        };
-
-        switch (currentRol) {
-            
-            case 'Administrador':
-            
-                if (adminPanel) adminPanel.style.display = 'block';
-                if (posSection) posSection.style.display = 'block';
-                toggleForms(true);
-                cargarCategorias(); 
-                cargarProductos();  
-                cargarProveedores();
-                cargarGraficaStock();
-                cargarKPIsVentas();
-                cargarGraficaVentas();
-                cargarReportesTemporales();
-                mostrarSeccion('dashboard');
+    // Detectamos el rol guardado en el login
+    const currentRol = isGitHubPages ? 'Administrador' : localStorage.getItem('user_rol');
     
-                break;
-
-            case 'Cajero':
-             
-                if (adminPanel) adminPanel.style.display = 'none'; 
-                if (posSection) posSection.style.display = 'block'; 
-                
-                cargarProductos(); 
-                break;
-
-            case 'Inventario':
-              
-                if (adminPanel) adminPanel.style.display = 'block';
-                if (posSection) posSection.style.display = 'none'; 
-                toggleForms(true); 
-
-                cargarCategorias(); 
-                cargarProductos();  
-                cargarProveedores();
-                break;
-
-            case 'Lector':
+    // Referencias a los botones de navegación
+    const navs = {
+        dashboard: document.getElementById('nav-dashboard'),
+        gestion: document.getElementById('nav-gestion'),
+        pos: document.getElementById('nav-pos')
+    };
     
-                if (adminPanel) adminPanel.style.display = 'block'; 
-                if (posSection) posSection.style.display = 'none';  
-                toggleForms(false); 
+    const adminForms = document.querySelectorAll('.admin-form'); 
+    const toggleForms = (show) => {
+        adminForms.forEach(form => form.style.display = show ? 'block' : 'none');
+    };
 
-                cargarCategorias(); 
-                cargarProductos();  
-                cargarProveedores();
-                break;
+    // --- LÓGICA DE ACCESO ---
+    switch (currentRol) {
+        case 'Administrador':
+            navs.dashboard.style.display = 'block';
+            navs.gestion.style.display = 'block';
+            navs.pos.style.display = 'block';
+            toggleForms(true);
+            
+            cargarTodoAdmin(); // Carga todas las gráficas y tablas
+            mostrarSeccion('dashboard');
+            break;
 
-            default:
-                console.warn('Rol desconocido:', rolUsuario);
-               
-                if (adminPanel) adminPanel.style.display = 'none';
-                if (posSection) posSection.style.display = 'none';
-                break;
-        }
+        case 'Inventario':
+            navs.dashboard.style.display = 'block';
+            navs.gestion.style.display = 'block';
+            navs.pos.style.display = 'none'; // No puede vender
+            toggleForms(true); // Puede agregar productos
+            
+            cargarCategorias();
+            cargarProductos();
+            cargarProveedores();
+            cargarGraficaStock();
+            mostrarSeccion('dashboard');
+            break;
 
-        console.log('Usuario logueado con rol:', rolUsuario);
+        case 'Lector':
+            navs.dashboard.style.display = 'block';
+            navs.gestion.style.display = 'block';
+            navs.pos.style.display = 'none';
+            toggleForms(false); // BLOQUEADO: Solo puede ver las listas
+            
+            cargarCategorias();
+            cargarProductos();
+            cargarGraficaStock();
+            mostrarSeccion('dashboard');
+            break;
+
+        case 'Cajero':
+            navs.dashboard.style.display = 'none'; // No ve dinero ni gráficas
+            navs.gestion.style.display = 'none';
+            navs.pos.style.display = 'block';
+            
+            cargarProductos(); // Solo para el select de ventas
+            mostrarSeccion('pos');
+            break;
+
+        default:
+            console.error('Acceso no autorizado');
+            window.location.href = 'login.html';
+            break;
     }
 });
 
+// Función auxiliar para no repetir código en el Admin
+function cargarTodoAdmin() {
+    cargarCategorias();
+    cargarProductos();
+    cargarProveedores();
+    cargarGraficaStock();
+    cargarKPIsVentas();
+    cargarGraficaVentas();
+    cargarReportesTemporales();
+}
 
 const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
