@@ -715,17 +715,23 @@ async function cargarReportesTemporales() {
 async function cargarVentasRecientes() {
     try {
         const res = await fetch(`${API_URL}/api/ventas-recientes`);
+        
+        // Si el servidor falla, lanzamos error para ir al catch
+        if (!res.ok) throw new Error('Error en el servidor');
+        
         const ventas = await res.json();
         const tabla = document.getElementById('lista-ventas-recientes');
-        
-        // Si el elemento no existe en el HTML actual, salimos para evitar errores
         if (!tabla) return;
-        tabla.innerHTML = '';
 
+        // VALIDACIÓN CLAVE: Verificamos que 'ventas' sea un Array
+        if (!Array.isArray(ventas)) {
+            console.error("El servidor no devolvió una lista:", ventas);
+            return;
+        }
+
+        tabla.innerHTML = '';
         ventas.forEach(v => {
-            // Formateamos la hora para que sea legible (ej: 14:30)
             const fecha = new Date(v.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><span class="badge bg-secondary">#${v.id_venta}</span></td>
@@ -737,5 +743,8 @@ async function cargarVentasRecientes() {
         });
     } catch (error) {
         console.error('Error al cargar historial:', error);
+        // Opcional: mostrar un mensaje pequeño en la tabla si falla
+        const tabla = document.getElementById('lista-ventas-recientes');
+        if (tabla) tabla.innerHTML = '<tr><td colspan="4" class="text-center text-muted small">Historial no disponible</td></tr>';
     }
 }
