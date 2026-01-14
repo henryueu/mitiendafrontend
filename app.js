@@ -527,6 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cargarGraficaStock();
                 cargarKPIsVentas();
                 cargarGraficaVentas();
+                cargarReportesTemporales();
     
                 break;
 
@@ -692,5 +693,54 @@ async function cargarGraficaVentas() {
         });
     } catch (error) {
         console.error('Error gráfica ventas:', error);
+    }
+}
+// --- FUNCIONES PARA REPORTES TEMPORALES ---
+
+async function cargarReportesTemporales() {
+    try {
+        // 1. Obtener la Venta de Hoy (Corte de caja)
+        const resHoy = await fetch(`${API_URL}/api/reporte-hoy`);
+        const dataHoy = await resHoy.json();
+        
+        const formateador = new Intl.NumberFormat('es-MX', { 
+            style: 'currency', 
+            currency: 'MXN' 
+        });
+        
+        // Actualizamos el KPI de hoy en el HTML
+        document.getElementById('kpi-venta-hoy').textContent = 
+            formateador.format(dataHoy.total_hoy);
+
+        // 2. Obtener la Tendencia Semanal (Gráfica de líneas)
+        const resSemana = await fetch(`${API_URL}/api/reporte-semanal`);
+        const dataSemana = await resSemana.json();
+
+        const ctx = document.getElementById('graficaSemanal').getContext('2d');
+        
+        // Creamos la gráfica de líneas
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dataSemana.map(d => d.dia),
+                datasets: [{
+                    label: 'Ventas Diarias ($)',
+                    data: dataSemana.map(d => d.total_dia),
+                    borderColor: '#36b9cc', // Color turquesa
+                    backgroundColor: 'rgba(54, 185, 204, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error al cargar reportes temporales:', error);
     }
 }
