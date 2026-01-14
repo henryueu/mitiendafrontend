@@ -590,17 +590,19 @@ if (btnLogout) {
 
 // 1. Función para navegar entre secciones (Modularización)
 function mostrarSeccion(idSeccion) {
-    document.getElementById('sec-dashboard').style.display = 'none';
-    document.getElementById('sec-inventario').style.display = 'none';
-    document.getElementById('sec-analitica').style.display = 'none';
+    const dashboard = document.getElementById('sec-dashboard');
+    const gestion = document.getElementById('sec-gestion');
 
-    document.getElementById('sec-' + idSeccion).style.display = 'block';
-    
-    // Al cambiar de sección, redibujamos las gráficas para que no se vean vacías
-    if (idSeccion === 'dashboard') cargarGraficaStock();
-    if (idSeccion === 'analitica') {
+    if (idSeccion === 'dashboard') {
+        dashboard.style.display = 'block';
+        gestion.style.display = 'none';
+        // Refrescamos las gráficas para que se ajusten al tamaño
+        cargarGraficaStock();
         cargarGraficaVentas();
         cargarReportesTemporales();
+    } else {
+        dashboard.style.display = 'none';
+        gestion.style.display = 'block';
     }
 }
 
@@ -610,41 +612,43 @@ async function cargarGraficaStock() {
         const respuesta = await fetch(`${API_URL}/api/reporte-stock`);
         const datos = await respuesta.json();
         const listaAvisos = document.getElementById('lista-avisos');
-        listaAvisos.innerHTML = ''; 
+        if (listaAvisos) listaAvisos.innerHTML = ''; 
 
         const etiquetas = datos.map(item => item.nombre_producto);
         const valores = datos.map(item => item.stock);
         const colores = datos.map(item => {
             if (item.stock <= 10) {
-                const li = document.createElement('li');
-                li.className = 'list-group-item text-danger small font-weight-bold';
-                li.innerHTML = `⚠️ Pedir: ${item.nombre_producto} (${item.stock} restan)`;
-                listaAvisos.appendChild(li);
-                return 'rgba(231, 74, 59, 0.8)';
+                if (listaAvisos) {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item text-danger small font-weight-bold';
+                    li.innerHTML = `⚠️ Pedir: ${item.nombre_producto} (${item.stock} restan)`;
+                    listaAvisos.appendChild(li);
+                }
+                return 'rgba(231, 74, 59, 0.8)'; // Rojo
             }
-            return 'rgba(78, 115, 223, 0.8)';
+            return 'rgba(78, 115, 223, 0.8)'; // Azul
         });
 
         const ctx = document.getElementById('graficaStock').getContext('2d');
-        if (window.chartStock) window.chartStock.destroy(); // Evita errores de superposición
+        if (window.chartStock) window.chartStock.destroy();
         window.chartStock = new Chart(ctx, {
             type: 'bar',
-            data: { labels: etiquetas, datasets: [{ label: 'Stock', data: valores, backgroundColor: colores }] },
+            data: { labels: etiquetas, datasets: [{ label: 'Stock Actual', data: valores, backgroundColor: colores }] },
             options: { responsive: true, maintainAspectRatio: false }
         });
-    } catch (e) { console.error("Error Stock:", e); }
+    } catch (e) { console.error("Error en Gráfica Stock:", e); }
 }
 
 // 3. KPIs de Ventas y Top 5
 async function cargarKPIsVentas() {
     try {
-        const resKpi = await fetch(`${API_URL}/api/reporte-kpis`);
-        const dKpi = await resKpi.json();
+        const res = await fetch(`${API_URL}/api/reporte-kpis`);
+        const datos = await res.json();
         const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
-        document.getElementById('kpi-total-dinero').textContent = fmt.format(dKpi.total_ingresos || 0);
-        document.getElementById('kpi-total-ventas').textContent = dKpi.total_transacciones || 0;
-    } catch (e) { console.error("Error KPIs:", e); }
+        document.getElementById('kpi-total-dinero').textContent = fmt.format(datos.total_ingresos || 0);
+        document.getElementById('kpi-total-ventas').textContent = datos.total_transacciones || 0;
+    } catch (e) { console.error("Error en KPIs:", e); }
 }
 
 async function cargarGraficaVentas() {
@@ -661,17 +665,19 @@ async function cargarGraficaVentas() {
             },
             options: { responsive: true, maintainAspectRatio: false }
         });
-    } catch (e) { console.error("Error Top Ventas:", e); }
+    } catch (e) { console.error("Error en Top Ventas:", e); }
 }
 
 // 4. Venta de Hoy y Tendencia Semanal
 async function cargarReportesTemporales() {
     try {
+        // Venta de Hoy
         const resH = await fetch(`${API_URL}/api/reporte-hoy`);
         const dH = await resH.json();
         const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
         document.getElementById('kpi-venta-hoy').textContent = fmt.format(dH.total_hoy || 0);
 
+        // Gráfica Semanal (Líneas)
         const resS = await fetch(`${API_URL}/api/reporte-semanal`);
         const dS = await resS.json();
         const ctx = document.getElementById('graficaSemanal').getContext('2d');
@@ -680,9 +686,9 @@ async function cargarReportesTemporales() {
             type: 'line',
             data: {
                 labels: dS.map(d => d.dia),
-                datasets: [{ label: 'Tendencia ($)', data: dS.map(d => d.total_dia), borderColor: '#36b9cc', fill: true, tension: 0.3 }]
+                datasets: [{ label: 'Ventas ($)', data: dS.map(d => d.total_dia), borderColor: '#36b9cc', fill: true, tension: 0.3 }]
             },
             options: { responsive: true, maintainAspectRatio: false }
         });
-    } catch (e) { console.error("Error Semanal:", e); }
+    } catch (e) { console.error("Error en Reportes Temporales:", e); }
 }
