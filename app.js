@@ -524,6 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cargarCategorias(); 
                 cargarProductos();  
                 cargarProveedores();
+                cargarGraficaStock();
                 break;
 
             case 'Cajero':
@@ -576,4 +577,53 @@ if (btnLogout) {
         localStorage.removeItem('user_rol');
         window.location.href = 'login.html';
     });
+}
+
+async function cargarGraficaStock() {
+    try {
+        // Hacemos el fetch a la nueva ruta del backend
+        const respuesta = await fetch(`${API_URL}/api/reporte-stock`);
+        const datos = await respuesta.json();
+
+        if (datos.length === 0) {
+            console.log("No hay productos con stock bajo para mostrar.");
+            return;
+        }
+
+        // Extraemos nombres y cantidades para la gráfica
+        const etiquetas = datos.map(item => item.nombre_producto);
+        const valores = datos.map(item => item.stock);
+
+        const ctx = document.getElementById('graficaStock').getContext('2d');
+        
+        // Creamos la gráfica con Chart.js
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: etiquetas,
+                datasets: [{
+                    label: 'Unidades Disponibles',
+                    data: valores,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)', // Color rojizo para "alerta"
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        title: { display: true, text: 'Cantidad' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false } // Ocultamos la leyenda para que se vea más limpio
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error al cargar la gráfica de stock:', error);
+    }
 }
