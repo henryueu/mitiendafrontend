@@ -21,20 +21,32 @@
 
     <div class="container mt-4">
         <div id="admin-panel">
-            <div class="row mb-4">
-            <div class="col-12">
-                <div class="card shadow">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Estado de Inventario (Stock Bajo)</h6>
-                    </div>
-                    <div class="card-body">
-                        <div style="height: 300px;">
-                            <canvas id="graficaStock"></canvas>
-                        </div>
-                    </div>
+           <div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card shadow h-100">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Análisis de Inventario Real</h6>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="graficaStock"></canvas>
                 </div>
             </div>
-        </div>  
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow h-100 border-left-danger">
+            <div class="card-header py-3 bg-danger">
+                <h6 class="m-0 font-weight-bold text-white">⚠️ Alertas de Resurtido</h6>
+            </div>
+            <div class="card-body">
+                <ul id="lista-avisos" class="list-group list-group-flush">
+                    </ul>
+            </div>
+        </div>
+    </div>
+</div>
         <div class="row">
             <div class="col-md-6">
                 <h2>Categorías de Productos</h2>

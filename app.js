@@ -581,49 +581,56 @@ if (btnLogout) {
 
 async function cargarGraficaStock() {
     try {
-        // Hacemos el fetch a la nueva ruta del backend
         const respuesta = await fetch(`${API_URL}/api/reporte-stock`);
         const datos = await respuesta.json();
 
-        if (datos.length === 0) {
-            console.log("No hay productos con stock bajo para mostrar.");
-            return;
-        }
+        const listaAvisos = document.getElementById('lista-avisos');
+        listaAvisos.innerHTML = ''; // Limpiar avisos previos
 
-        // Extraemos nombres y cantidades para la gráfica
+        // 1. Generar etiquetas, valores y COLORES DINÁMICOS
         const etiquetas = datos.map(item => item.nombre_producto);
         const valores = datos.map(item => item.stock);
+        
+        const colores = datos.map(item => {
+            if (item.stock <= 10) {
+                // Agregar a la lista de avisos si es crítico
+                const li = document.createElement('li');
+                li.className = 'list-group-item text-danger small font-weight-bold';
+                li.innerHTML = `Pedir: ${item.nombre_producto} (${item.stock} restan)`;
+                listaAvisos.appendChild(li);
+                
+                return 'rgba(231, 74, 59, 0.8)'; // Rojo Bootstrap
+            }
+            return 'rgba(78, 115, 223, 0.8)'; // Azul Bootstrap
+        });
+
+        if (listaAvisos.innerHTML === '') {
+            listaAvisos.innerHTML = '<li class="list-group-item text-success">Stock completo ✅</li>';
+        }
 
         const ctx = document.getElementById('graficaStock').getContext('2d');
         
-        // Creamos la gráfica con Chart.js
-        new Chart(ctx, {
+        // Destruir gráfica previa si existe para evitar parpadeo
+        if (window.miGrafica) { window.miGrafica.destroy(); }
+
+        window.miGrafica = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: etiquetas,
                 datasets: [{
-                    label: 'Unidades Disponibles',
+                    label: 'Unidades',
                     data: valores,
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)', // Color rojizo para "alerta"
-                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: colores, // Aquí aplicamos los colores dinámicos
                     borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        title: { display: true, text: 'Cantidad' }
-                    }
-                },
-                plugins: {
-                    legend: { display: false } // Ocultamos la leyenda para que se vea más limpio
-                }
+                scales: { y: { beginAtZero: true } }
             }
         });
     } catch (error) {
-        console.error('Error al cargar la gráfica de stock:', error);
+        console.error('Error:', error);
     }
 }
