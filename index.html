@@ -89,6 +89,26 @@
 .form-label {
     color: #cbd5e1 !important;
 }
+/* --- ESTILOS PARA LA LISTA DE PRODUCTOS --- */
+#lista-productos .list-group-item {
+    background: rgba(255, 255, 255, 0.05) !important; /* Fondo semi-transparente */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important; /* Nombre del producto siempre blanco */
+    margin-bottom: 8px;
+    border-radius: 12px !important;
+}
+
+/* Forzamos que la marca y la categoría sean legibles */
+#lista-productos .list-group-item small {
+    color: #cbd5e1 !important; /* Gris claro que resalta en el fondo oscuro */
+    font-size: 0.85rem;
+}
+
+/* Color especial para resaltar la categoría */
+.text-categoria {
+    color: #36b9cc !important; 
+    font-weight: 500;
+}
 </style>
 </head>
 <body class="bg-light">

@@ -150,10 +150,14 @@ async function cargarProductos() {
         const respuesta = await fetch(`${API_URL}/api/productos`);
         const productos = await respuesta.json();
 
+        // Limpiamos los contenedores antes de cargar
+        const listaProductos = document.getElementById('lista-productos');
+        const selectVentaProducto = document.getElementById('venta-producto');
+        
         listaProductos.innerHTML = '';
         selectVentaProducto.innerHTML = ''; 
 
-        
+        // Opción por defecto para el Punto de Venta
         const opcionVentaDefecto = document.createElement('option');
         opcionVentaDefecto.value = "";
         opcionVentaDefecto.textContent = "Selecciona un producto";
@@ -165,34 +169,36 @@ async function cargarProductos() {
         }
 
         productos.forEach(producto => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            // CORRECCIÓN: Si nombre_categoria viene nulo o vacío, mostramos "Sin categoría"
+            const categoriaDisplay = producto.nombre_categoria || "Sin categoría";
 
-            
+            // 1. Crear el elemento para la lista de Inventario
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center shadow-sm';
+
             li.innerHTML = `
                 <div>
-                    <span class="fw-bold">${producto.nombre_producto}</span>
-                    <small class="text-muted d-block">${producto.marca} - ${producto.nombre_categoria}</small>
+                    <span class="fw-bold d-block text-white">${producto.nombre_producto}</span>
+                    <small>${producto.marca} - <span class="text-categoria">${categoriaDisplay}</span></small>
                 </div>
                 <span class="badge bg-primary rounded-pill">Stock: ${producto.stock}</span>
             `;
             listaProductos.appendChild(li);
 
-            
+            // 2. Crear la opción para el select del Punto de Venta
             if (producto.stock > 0) {
                 const opcion = document.createElement('option');
                 opcion.value = producto.id_producto;
-                
                 opcion.dataset.precio = producto.precio_venta;
                 opcion.dataset.nombre = producto.nombre_producto;
                 opcion.textContent = `${producto.nombre_producto} ($${producto.precio_venta}) - Stock: ${producto.stock}`;
                 selectVentaProducto.appendChild(opcion);
             }
-
         });
 
     } catch (error) {
         console.error('Error al cargar productos:', error);
+        const listaProductos = document.getElementById('lista-productos');
         listaProductos.innerHTML = `<li class="list-group-item text-danger">Error al cargar productos.</li>`;
     }
 }
