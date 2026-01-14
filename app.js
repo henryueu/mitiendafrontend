@@ -147,7 +147,7 @@ if (btnAgregar) {
 // FUNCIÓN PARA OBTENER Y MOSTRAR PRODUCTO
 async function cargarProductos() {
     try {
-        // 1. Primero traemos la lista de categorías para saber sus nombres
+        // 1. Traemos las categorías para el mapeo
         const resCat = await fetch(`${API_URL}/api/categorias`);
         const categorias = await resCat.json();
 
@@ -173,12 +173,12 @@ async function cargarProductos() {
         }
 
         productos.forEach(producto => {
-            // --- LÓGICA DE MAPEO ---
-            // Buscamos en el array de categorías la que coincida con el ID del producto
-            const catEncontrada = categorias.find(c => c.id === producto.categoria_id);
-            const nombreMostrar = catEncontrada ? catEncontrada.nombre : "Sin categoría";
+            // --- LÓGICA DE MAPEO CORREGIDA (Según tu captura de Neon) ---
+            // Buscamos usando 'id_categoria' que es el nombre real en tu DB
+            const catEncontrada = categorias.find(c => c.id_categoria === producto.id_categoria);
+            const nombreMostrar = catEncontrada ? catEncontrada.nombre_categoria : "Sin categoría";
 
-            // 1. Renderizamos en la lista de Inventario (con el estilo Dark Aurora)
+            // 1. Renderizado en Inventario
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center shadow-sm';
             li.innerHTML = `
@@ -192,7 +192,7 @@ async function cargarProductos() {
             `;
             listaProductos.appendChild(li);
 
-            // 2. Llenamos el select para el Punto de Venta
+            // 2. Llenado del select para Ventas
             if (producto.stock > 0) {
                 const opcion = document.createElement('option');
                 opcion.value = producto.id_producto;
