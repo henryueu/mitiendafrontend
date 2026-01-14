@@ -10,113 +10,112 @@
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">🛒 Tienda de Don José</span>
-            <button class="btn btn-outline-light btn-sm" id="btn-logout">
-                Cerrar Sesión
-            </button>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">🛒 Tienda de Don José</span>
+        <div class="navbar-nav me-auto">
+            <button class="btn btn-outline-light btn-sm mx-1" onclick="mostrarSeccion('dashboard')">Panel General</button>
+            <button class="btn btn-outline-light btn-sm mx-1" onclick="mostrarSeccion('inventario')">Gestión Inventario</button>
+            <button class="btn btn-outline-light btn-sm mx-1" onclick="mostrarSeccion('analitica')">Análisis Ventas</button>
         </div>
+        <button class="btn btn-outline-danger btn-sm" id="btn-logout">Cerrar Sesión</button>
+    </div>
     </nav>
 
     <div class="container mt-4">
-        <div id="admin-panel">
-           <div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card shadow h-100">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Análisis de Inventario Real</h6>
-            </div>
-            <div class="card-body">
-                <div style="height: 300px;">
-                    <canvas id="graficaStock"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="admin-panel">
 
-    <div class="col-md-4">
-        <div class="card shadow h-100 border-left-danger">
-            <div class="card-header py-3 bg-danger">
-                <h6 class="m-0 font-weight-bold text-white">⚠️ Alertas de Resurtido</h6>
-            </div>
-            <div class="card-body">
-                <ul id="lista-avisos" class="list-group list-group-flush">
-                    </ul>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row mb-4 mt-5"> 
-    <div class="col-12 mb-3">
-        <h4 class="text-gray-800">Resumen Financiero y de Ventas</h4>
-    </div>
-    
-    <div class="col-md-4 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Ingresos Totales</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-total-dinero">$0.00</div>
+        <section id="sec-dashboard">
+            <div class="row mb-4"> 
+                <div class="col-12 mb-3">
+                    <h4 class="text-gray-800">Resumen Financiero y de Ventas</h4>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Ingresos Totales</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-total-dinero">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Ventas Realizadas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-total-ventas">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Venta de Hoy</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-venta-hoy">$0.00</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="col-md-4 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Ventas Realizadas</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-total-ventas">0</div>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow h-100">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Análisis de Inventario Real</h6>
+                        </div>
+                        <div class="card-body">
+                            <div style="height: 300px;">
+                                <canvas id="graficaStock"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <div class="col-md-4 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Venta de Hoy</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-venta-hoy">$0.00</div>
+        <section id="sec-inventario" style="display:none;">
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <div class="card shadow h-100 border-left-danger">
+                        <div class="card-header py-3 bg-danger text-white">
+                            <h6 class="m-0 font-weight-bold">⚠️ Alertas de Resurtido</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul id="lista-avisos" class="list-group list-group-flush"></ul>
+                        </div>
+                    </div>
+                </div>
+                
+                </div>
+        </section>
+
+        <section id="sec-analitica" style="display:none;">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 text-success">
+                            <h6 class="m-0 font-weight-bold">Top 5 Productos Más Vendidos</h6>
+                        </div>
+                        <div class="card-body">
+                            <div style="height: 350px;"><canvas id="graficaVentas"></canvas></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-success">Top 5 Productos Más Vendidos</h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-area" style="height: 350px;">
-                    <canvas id="graficaVentas"></canvas>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 text-info">
+                            <h6 class="m-0 font-weight-bold">Tendencia de Ventas (Últimos 7 Días)</h6>
+                        </div>
+                        <div class="card-body">
+                            <div style="height: 300px;"><canvas id="graficaSemanal"></canvas></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-info">Tendencia de Ventas (Últimos 7 Días)</h6>
-            </div>
-            <div class="card-body">
-                <div style="height: 300px;">
-                    <canvas id="graficaSemanal"></canvas>
-                </div>
-            </div>
-        </div>
+        </section>
+
     </div>
 </div>
         <div class="row">

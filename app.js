@@ -528,6 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cargarKPIsVentas();
                 cargarGraficaVentas();
                 cargarReportesTemporales();
+                mostrarSeccion('dashboard');
     
                 break;
 
@@ -583,164 +584,105 @@ if (btnLogout) {
     });
 }
 
+// =========================================================
+// FUNCIONES DE CONTROL Y REPORTES (VERSIÓN CONSOLIDADA)
+// =========================================================
+
+// 1. Función para navegar entre secciones (Modularización)
+function mostrarSeccion(idSeccion) {
+    document.getElementById('sec-dashboard').style.display = 'none';
+    document.getElementById('sec-inventario').style.display = 'none';
+    document.getElementById('sec-analitica').style.display = 'none';
+
+    document.getElementById('sec-' + idSeccion).style.display = 'block';
+    
+    // Al cambiar de sección, redibujamos las gráficas para que no se vean vacías
+    if (idSeccion === 'dashboard') cargarGraficaStock();
+    if (idSeccion === 'analitica') {
+        cargarGraficaVentas();
+        cargarReportesTemporales();
+    }
+}
+
+// 2. Gráfica de Inventario (Rojo/Azul)
 async function cargarGraficaStock() {
     try {
         const respuesta = await fetch(`${API_URL}/api/reporte-stock`);
         const datos = await respuesta.json();
-
         const listaAvisos = document.getElementById('lista-avisos');
-        listaAvisos.innerHTML = ''; // Limpiar avisos previos
+        listaAvisos.innerHTML = ''; 
 
-        // 1. Generar etiquetas, valores y COLORES DINÁMICOS
         const etiquetas = datos.map(item => item.nombre_producto);
         const valores = datos.map(item => item.stock);
-        
         const colores = datos.map(item => {
             if (item.stock <= 10) {
-                // Agregar a la lista de avisos si es crítico
                 const li = document.createElement('li');
                 li.className = 'list-group-item text-danger small font-weight-bold';
-                li.innerHTML = `Pedir: ${item.nombre_producto} (${item.stock} restan)`;
+                li.innerHTML = `⚠️ Pedir: ${item.nombre_producto} (${item.stock} restan)`;
                 listaAvisos.appendChild(li);
-                
-                return 'rgba(231, 74, 59, 0.8)'; // Rojo Bootstrap
+                return 'rgba(231, 74, 59, 0.8)';
             }
-            return 'rgba(78, 115, 223, 0.8)'; // Azul Bootstrap
+            return 'rgba(78, 115, 223, 0.8)';
         });
-
-        if (listaAvisos.innerHTML === '') {
-            listaAvisos.innerHTML = '<li class="list-group-item text-success">Stock completo ✅</li>';
-        }
 
         const ctx = document.getElementById('graficaStock').getContext('2d');
-        
-        // Destruir gráfica previa si existe para evitar parpadeo
-        if (window.miGrafica) { window.miGrafica.destroy(); }
-
-        window.miGrafica = new Chart(ctx, {
+        if (window.chartStock) window.chartStock.destroy(); // Evita errores de superposición
+        window.chartStock = new Chart(ctx, {
             type: 'bar',
-            data: {
-                labels: etiquetas,
-                datasets: [{
-                    label: 'Unidades',
-                    data: valores,
-                    backgroundColor: colores, // Aquí aplicamos los colores dinámicos
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
-            }
+            data: { labels: etiquetas, datasets: [{ label: 'Stock', data: valores, backgroundColor: colores }] },
+            options: { responsive: true, maintainAspectRatio: false }
         });
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    } catch (e) { console.error("Error Stock:", e); }
 }
 
-// --- FUNCIONES PARA EL REPORTE DE VENTAS ---
-
+// 3. KPIs de Ventas y Top 5
 async function cargarKPIsVentas() {
     try {
-        const respuesta = await fetch(`${API_URL}/api/reporte-kpis`);
-        const datos = await respuesta.json();
+        const resKpi = await fetch(`${API_URL}/api/reporte-kpis`);
+        const dKpi = await resKpi.json();
+        const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
-        // Formateador para pesos mexicanos
-        const formateador = new Intl.NumberFormat('es-MX', {
-            style: 'currency', currency: 'MXN'
-        });
-
-        // Llenamos los cuadros de texto con los IDs que pusimos en el HTML
-        document.getElementById('kpi-total-dinero').textContent = 
-            datos.total_ingresos ? formateador.format(datos.total_ingresos) : '$0.00';
-            
-        document.getElementById('kpi-total-ventas').textContent = 
-            datos.total_transacciones || '0';
-    } catch (error) {
-        console.error('Error cargando KPIs:', error);
-    }
+        document.getElementById('kpi-total-dinero').textContent = fmt.format(dKpi.total_ingresos || 0);
+        document.getElementById('kpi-total-ventas').textContent = dKpi.total_transacciones || 0;
+    } catch (e) { console.error("Error KPIs:", e); }
 }
 
 async function cargarGraficaVentas() {
     try {
-        const respuesta = await fetch(`${API_URL}/api/reporte-top-ventas`);
-        const datos = await respuesta.json();
-
-        const etiquetas = datos.map(item => item.nombre_producto);
-        const valores = datos.map(item => item.total_unidades_vendidas);
-
+        const res = await fetch(`${API_URL}/api/reporte-top-ventas`);
+        const datos = await res.json();
         const ctx = document.getElementById('graficaVentas').getContext('2d');
-        
-        // Creamos la gráfica de "Top Ventas"
-        new Chart(ctx, {
+        if (window.chartVentas) window.chartVentas.destroy();
+        window.chartVentas = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: etiquetas,
-                datasets: [{
-                    label: 'Unidades Vendidas',
-                    data: valores,
-                    backgroundColor: 'rgba(28, 200, 138, 0.7)', // Color verde profesional
-                    borderColor: 'rgba(28, 200, 138, 1)',
-                    borderWidth: 1
-                }]
+                labels: datos.map(i => i.nombre_producto),
+                datasets: [{ label: 'Unidades Vendidas', data: datos.map(i => i.total_unidades_vendidas), backgroundColor: 'rgba(28, 200, 138, 0.7)' }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
-            }
+            options: { responsive: true, maintainAspectRatio: false }
         });
-    } catch (error) {
-        console.error('Error gráfica ventas:', error);
-    }
+    } catch (e) { console.error("Error Top Ventas:", e); }
 }
-// --- FUNCIONES PARA REPORTES TEMPORALES ---
 
+// 4. Venta de Hoy y Tendencia Semanal
 async function cargarReportesTemporales() {
     try {
-        // 1. Obtener la Venta de Hoy (Corte de caja)
-        const resHoy = await fetch(`${API_URL}/api/reporte-hoy`);
-        const dataHoy = await resHoy.json();
-        
-        const formateador = new Intl.NumberFormat('es-MX', { 
-            style: 'currency', 
-            currency: 'MXN' 
-        });
-        
-        // Actualizamos el KPI de hoy en el HTML
-        document.getElementById('kpi-venta-hoy').textContent = 
-            formateador.format(dataHoy.total_hoy);
+        const resH = await fetch(`${API_URL}/api/reporte-hoy`);
+        const dH = await resH.json();
+        const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+        document.getElementById('kpi-venta-hoy').textContent = fmt.format(dH.total_hoy || 0);
 
-        // 2. Obtener la Tendencia Semanal (Gráfica de líneas)
-        const resSemana = await fetch(`${API_URL}/api/reporte-semanal`);
-        const dataSemana = await resSemana.json();
-
+        const resS = await fetch(`${API_URL}/api/reporte-semanal`);
+        const dS = await resS.json();
         const ctx = document.getElementById('graficaSemanal').getContext('2d');
-        
-        // Creamos la gráfica de líneas
-        new Chart(ctx, {
+        if (window.chartSemana) window.chartSemana.destroy();
+        window.chartSemana = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: dataSemana.map(d => d.dia),
-                datasets: [{
-                    label: 'Ventas Diarias ($)',
-                    data: dataSemana.map(d => d.total_dia),
-                    borderColor: '#36b9cc', // Color turquesa
-                    backgroundColor: 'rgba(54, 185, 204, 0.1)',
-                    fill: true,
-                    tension: 0.3
-                }]
+                labels: dS.map(d => d.dia),
+                datasets: [{ label: 'Tendencia ($)', data: dS.map(d => d.total_dia), borderColor: '#36b9cc', fill: true, tension: 0.3 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false }
         });
-    } catch (error) {
-        console.error('Error al cargar reportes temporales:', error);
-    }
+    } catch (e) { console.error("Error Semanal:", e); }
 }
