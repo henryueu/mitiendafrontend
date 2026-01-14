@@ -147,7 +147,7 @@ if (btnAgregar) {
 // FUNCIÓN PARA OBTENER Y MOSTRAR PRODUCTO
 async function cargarProductos() {
     try {
-        // 1. Traemos las categorías y los productos
+        // Traemos categorías y productos al mismo tiempo
         const [resCat, resProd] = await Promise.all([
             fetch(`${API_URL}/api/categorias`),
             fetch(`${API_URL}/api/productos`)
@@ -156,36 +156,20 @@ async function cargarProductos() {
         const categorias = await resCat.json();
         const productos = await resProd.json();
 
-        // LOG DE DEPURACIÓN: Abre la consola (F12) para ver esto
-        console.log("Categorías cargadas:", categorias);
-        console.log("Productos cargados:", productos);
-
         const listaProductos = document.getElementById('lista-productos');
         const selectVentaProducto = document.getElementById('venta-producto');
         
         listaProductos.innerHTML = '';
         selectVentaProducto.innerHTML = ''; 
 
-        const opcionVentaDefecto = document.createElement('option');
-        opcionVentaDefecto.value = "";
-        opcionVentaDefecto.textContent = "Selecciona un producto";
-        selectVentaProducto.appendChild(opcionVentaDefecto);
-
-        if (productos.length === 0) {
-            listaProductos.innerHTML = '<li class="list-group-item">No hay productos registrados.</li>';
-            return;
-        }
-
         productos.forEach(producto => {
-            // --- LÓGICA DE MAPEO BLINDADA ---
-            // Usamos Number() para asegurar que comparamos números con números
+            // Buscamos el nombre real usando el ID que ya incluimos en el backend
             const catEncontrada = categorias.find(c => 
                 Number(c.id_categoria) === Number(producto.id_categoria)
             );
             
             const nombreMostrar = catEncontrada ? catEncontrada.nombre_categoria : "Sin categoría";
 
-            // 1. Renderizado visual para Inventario
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center shadow-sm';
             li.innerHTML = `
@@ -199,7 +183,7 @@ async function cargarProductos() {
             `;
             listaProductos.appendChild(li);
 
-            // 2. Llenado del select para el Punto de Venta
+            // Llenar select de ventas si hay stock
             if (Number(producto.stock) > 0) {
                 const opcion = document.createElement('option');
                 opcion.value = producto.id_producto;
@@ -209,9 +193,8 @@ async function cargarProductos() {
                 selectVentaProducto.appendChild(opcion);
             }
         });
-
     } catch (error) {
-        console.error('Error crítico al cargar productos:', error);
+        console.error('Error al cargar productos:', error);
     }
 }
 
