@@ -147,13 +147,18 @@ if (btnAgregar) {
 // FUNCIÓN PARA OBTENER Y MOSTRAR PRODUCTO
 async function cargarProductos() {
     try {
-        // 1. Traemos las categorías para el mapeo
-        const resCat = await fetch(`${API_URL}/api/categorias`);
+        // 1. Traemos las categorías y los productos
+        const [resCat, resProd] = await Promise.all([
+            fetch(`${API_URL}/api/categorias`),
+            fetch(`${API_URL}/api/productos`)
+        ]);
+        
         const categorias = await resCat.json();
+        const productos = await resProd.json();
 
-        // 2. Traemos los productos
-        const respuesta = await fetch(`${API_URL}/api/productos`);
-        const productos = await respuesta.json();
+        // LOG DE DEPURACIÓN: Abre la consola (F12) para ver esto
+        console.log("Categorías cargadas:", categorias);
+        console.log("Productos cargados:", productos);
 
         const listaProductos = document.getElementById('lista-productos');
         const selectVentaProducto = document.getElementById('venta-producto');
@@ -161,7 +166,6 @@ async function cargarProductos() {
         listaProductos.innerHTML = '';
         selectVentaProducto.innerHTML = ''; 
 
-        // Opción por defecto para el Punto de Venta
         const opcionVentaDefecto = document.createElement('option');
         opcionVentaDefecto.value = "";
         opcionVentaDefecto.textContent = "Selecciona un producto";
@@ -173,12 +177,15 @@ async function cargarProductos() {
         }
 
         productos.forEach(producto => {
-            // --- LÓGICA DE MAPEO CORREGIDA (Según tu captura de Neon) ---
-            // Buscamos usando 'id_categoria' que es el nombre real en tu DB
-            const catEncontrada = categorias.find(c => c.id_categoria === producto.id_categoria);
+            // --- LÓGICA DE MAPEO BLINDADA ---
+            // Usamos Number() para asegurar que comparamos números con números
+            const catEncontrada = categorias.find(c => 
+                Number(c.id_categoria) === Number(producto.id_categoria)
+            );
+            
             const nombreMostrar = catEncontrada ? catEncontrada.nombre_categoria : "Sin categoría";
 
-            // 1. Renderizado en Inventario
+            // 1. Renderizado visual para Inventario
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center shadow-sm';
             li.innerHTML = `
@@ -192,8 +199,8 @@ async function cargarProductos() {
             `;
             listaProductos.appendChild(li);
 
-            // 2. Llenado del select para Ventas
-            if (producto.stock > 0) {
+            // 2. Llenado del select para el Punto de Venta
+            if (Number(producto.stock) > 0) {
                 const opcion = document.createElement('option');
                 opcion.value = producto.id_producto;
                 opcion.dataset.precio = producto.precio_venta;
@@ -204,9 +211,7 @@ async function cargarProductos() {
         });
 
     } catch (error) {
-        console.error('Error al cargar productos:', error);
-        document.getElementById('lista-productos').innerHTML = 
-            `<li class="list-group-item text-danger">Error al cargar productos.</li>`;
+        console.error('Error crítico al cargar productos:', error);
     }
 }
 
