@@ -147,10 +147,14 @@ if (btnAgregar) {
 // FUNCIÓN PARA OBTENER Y MOSTRAR PRODUCTO
 async function cargarProductos() {
     try {
+        // 1. Primero traemos la lista de categorías para saber sus nombres
+        const resCat = await fetch(`${API_URL}/api/categorias`);
+        const categorias = await resCat.json();
+
+        // 2. Traemos los productos
         const respuesta = await fetch(`${API_URL}/api/productos`);
         const productos = await respuesta.json();
 
-        // Limpiamos los contenedores antes de cargar
         const listaProductos = document.getElementById('lista-productos');
         const selectVentaProducto = document.getElementById('venta-producto');
         
@@ -169,23 +173,26 @@ async function cargarProductos() {
         }
 
         productos.forEach(producto => {
-            // CORRECCIÓN: Si nombre_categoria viene nulo o vacío, mostramos "Sin categoría"
-            const categoriaDisplay = producto.nombre_categoria || "Sin categoría";
+            // --- LÓGICA DE MAPEO ---
+            // Buscamos en el array de categorías la que coincida con el ID del producto
+            const catEncontrada = categorias.find(c => c.id === producto.categoria_id);
+            const nombreMostrar = catEncontrada ? catEncontrada.nombre : "Sin categoría";
 
-            // 1. Crear el elemento para la lista de Inventario
+            // 1. Renderizamos en la lista de Inventario (con el estilo Dark Aurora)
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center shadow-sm';
-
             li.innerHTML = `
                 <div>
                     <span class="fw-bold d-block text-white">${producto.nombre_producto}</span>
-                    <small>${producto.marca} - <span class="text-categoria">${categoriaDisplay}</span></small>
+                    <small class="text-muted d-block">
+                        ${producto.marca} - <span class="text-info">${nombreMostrar}</span>
+                    </small>
                 </div>
                 <span class="badge bg-primary rounded-pill">Stock: ${producto.stock}</span>
             `;
             listaProductos.appendChild(li);
 
-            // 2. Crear la opción para el select del Punto de Venta
+            // 2. Llenamos el select para el Punto de Venta
             if (producto.stock > 0) {
                 const opcion = document.createElement('option');
                 opcion.value = producto.id_producto;
@@ -198,8 +205,8 @@ async function cargarProductos() {
 
     } catch (error) {
         console.error('Error al cargar productos:', error);
-        const listaProductos = document.getElementById('lista-productos');
-        listaProductos.innerHTML = `<li class="list-group-item text-danger">Error al cargar productos.</li>`;
+        document.getElementById('lista-productos').innerHTML = 
+            `<li class="list-group-item text-danger">Error al cargar productos.</li>`;
     }
 }
 
