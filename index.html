@@ -64,6 +64,31 @@
     .list-group-item:hover {
         background: rgba(54, 185, 204, 0.1) !important;
     }
+    /* Forzamos que los títulos y textos de las tarjetas sean blancos */
+#admin-panel .card-body, 
+#admin-panel .list-group-item,
+#lista-proveedores, 
+#lista-productos, 
+#lista-categorias {
+    color: #f1f5f9 !important; /* Blanco azulado suave */
+}
+
+/* Corregimos los textos pequeños (como el teléfono y dirección) */
+#lista-proveedores div, 
+#lista-proveedores small, 
+#lista-proveedores p {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Estilo para los nombres de productos y proveedores destacados */
+.font-weight-bold, strong {
+    color: #ffffff !important;
+}
+
+/* Ajuste para que las etiquetas de los formularios no se pierdan */
+.form-label {
+    color: #cbd5e1 !important;
+}
 </style>
 </head>
 <body class="bg-light">
