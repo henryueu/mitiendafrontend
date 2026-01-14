@@ -411,7 +411,6 @@ async function registrarVenta() {
     btnRegistrarVenta.textContent = 'Registrando...';
 
     try {
-        
         const respuesta = await fetch(`${API_URL}/api/ventas`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -423,15 +422,15 @@ async function registrarVenta() {
             throw new Error(errorData.error || 'Error del servidor');
         }
 
-        
         alert('¡Venta registrada con éxito!');
 
-        
+        // Limpieza del carrito
         carrito = []; 
         actualizarVistaCarrito();
 
-     
-        await cargarProductos();
+        // --- ACTUALIZACIÓN DE DATOS EN TIEMPO REAL ---
+        await cargarProductos();       // Actualiza el stock visualmente
+        await cargarVentasRecientes(); // <--- ESTA ES LA LÍNEA QUE DEBES AGREGAR
 
     } catch (error) {
         console.error('Error al registrar la venta:', error);
@@ -441,7 +440,6 @@ async function registrarVenta() {
         btnRegistrarVenta.textContent = 'Registrar Venta';
     }
 }
-
 
 if (btnAgregarCarrito) {
     btnAgregarCarrito.addEventListener('click', agregarAlCarrito);
@@ -534,6 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleForms(true);
             
             cargarTodoAdmin(); // Carga todas las gráficas y tablas
+            cargarVentasRecientes(); //
             mostrarSeccion('dashboard');
             break;
 
@@ -572,6 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
             navs.pos.style.display = 'block';
             
             cargarProductos(); // Solo para el select de ventas
+            cargarVentasRecientes(); //
             mostrarSeccion('pos');
             break;
 
@@ -710,4 +710,32 @@ async function cargarReportesTemporales() {
             options: { responsive: true, maintainAspectRatio: false }
         });
     } catch (e) { console.error("Error en Reportes Temporales:", e); }
+}
+
+async function cargarVentasRecientes() {
+    try {
+        const res = await fetch(`${API_URL}/api/ventas-recientes`);
+        const ventas = await res.json();
+        const tabla = document.getElementById('lista-ventas-recientes');
+        
+        // Si el elemento no existe en el HTML actual, salimos para evitar errores
+        if (!tabla) return;
+        tabla.innerHTML = '';
+
+        ventas.forEach(v => {
+            // Formateamos la hora para que sea legible (ej: 14:30)
+            const fecha = new Date(v.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="badge bg-secondary">#${v.id_venta}</span></td>
+                <td>${fecha}</td>
+                <td class="small text-muted">${v.productos}</td>
+                <td class="fw-bold text-success">$${Number(v.total).toFixed(2)}</td>
+            `;
+            tabla.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Error al cargar historial:', error);
+    }
 }

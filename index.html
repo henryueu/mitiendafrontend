@@ -298,6 +298,32 @@
                         <h4>Total: $ <span id="carrito-total">0.00</span></h4>
                         <button class="btn btn-success btn-lg w-100" id="btn-registrar-venta">Registrar Venta</button>
                     </div>
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <div class="card shadow">
+                                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                    <h6 class="m-0 font-weight-bold text-primary">📜 Ventas Recientes (Hoy)</h6>
+                                    <button class="btn btn-sm btn-outline-info" onclick="cargarVentasRecientes()">🔄 Actualizar</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-dark table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Folio</th>
+                                                    <th>Hora</th>
+                                                    <th>Productos</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="lista-ventas-recientes">
+                                                </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
