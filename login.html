@@ -10,22 +10,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Tienda Don José</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <style>
+        /* 1. Fondo Gradiente Oscuro Profundo */
         body {
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #f8f9fa;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            background-attachment: fixed;
+            color: #f1f5f9;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
+
+        /* 2. Tu Contenedor con Efecto Cristal */
         .login-container {
             width: 100%;
             max-width: 400px;
-            padding: 15px;
+            padding: 20px;
         }
+
+        .card {
+            background: rgba(30, 41, 59, 0.7); /* Efecto Glassmorphism */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        /* 3. Estilo de Inputs Oscuros */
+        .form-control {
+            background: rgba(15, 23, 42, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            border-radius: 10px;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 4px rgba(54, 185, 204, 0.2) !important;
+            border-color: #36b9cc !important;
+        }
+
+        /* 4. Botones con Gradiente */
+        .btn-primary {
+            background: linear-gradient(135deg, #4e73df, #36b9cc);
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            padding: 10px;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(54, 185, 204, 0.4);
+        }
+
         .btn-directo {
             margin-top: 15px;
-            border-style: dashed;
+            border-style: dashed !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        h2 {
+            background: linear-gradient(to right, #ffffff, #36b9cc);
+            background-clip: text; /* Propiedad Estándar */
+            -webkit-background-clip: text; /* Soporte para Chrome/Safari/Edge */
+            -webkit-text-fill-color: transparent; /* Necesario para que el degradado sea visible */
+            font-weight: 700;
         }
     </style>
 </head>
@@ -33,15 +86,15 @@
     <div class="login-container">
         <h2 class="text-center mb-4">Acceso al Sistema</h2>
         <div class="card p-4 shadow">
-            <div id="mensaje-error" class="alert alert-danger d-none"></div>
+            <div id="mensaje-error" class="alert alert-danger d-none" style="background: rgba(220, 53, 69, 0.2); border: none; color: #ff8787;"></div>
 
             <div class="mb-3">
                 <label for="username-input" class="form-label">Usuario:</label>
-                <input type="text" class="form-control" id="username-input" required>
+                <input type="text" class="form-control" id="username-input" required placeholder="Ingresa tu usuario">
             </div>
             <div class="mb-3">
                 <label for="password-input" class="form-label">Contraseña:</label>
-                <input type="password" class="form-control" id="password-input" required>
+                <input type="password" class="form-control" id="password-input" required placeholder="••••••••">
             </div>
             
             <button type="button" class="btn btn-primary w-100" id="btn-login">

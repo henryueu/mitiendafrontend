@@ -1,3 +1,6 @@
+// Configuración global para que Chart.js combine con el Dark Mode
+Chart.defaults.color = '#cbd5e1'; // Color gris claro/blanco
+Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)'; // Líneas de la cuadrícula sutiles
 const API_URL = 'https://mitienda-ibgx.onrender.com'; 
 const token = localStorage.getItem('jwt_token');
 const rolUsuario = localStorage.getItem('user_rol');
