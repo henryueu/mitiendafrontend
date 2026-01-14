@@ -512,7 +512,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const adminForms = document.querySelectorAll('.admin-form'); 
     const toggleForms = (show) => {
+        // 1. Ocultar los contenedores sombreados (.admin-form)
+        const adminForms = document.querySelectorAll('.admin-form'); 
         adminForms.forEach(form => form.style.display = show ? 'block' : 'none');
+
+        // 2. SEGURO EXTRA: Ocultar cualquier botón que empiece con "btn-agregar"
+        // Esto evita que el Lector vea los botones aunque el formulario falle al ocultarse
+        const botonesAgregar = document.querySelectorAll('[id^="btn-agregar"]');
+        botonesAgregar.forEach(btn => btn.style.display = show ? 'block' : 'none');
     };
 
     // --- LÓGICA DE ACCESO ---

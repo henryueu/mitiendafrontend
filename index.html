@@ -141,13 +141,39 @@
                         <ul class="list-group" id="lista-proveedores"></ul>
                     </div>
                     <div class="col-md-6">
-                        <h3>Agregar Nuevo Proveedor</h3>
-                        <div class="card p-3 shadow">
-                            <div class="mb-3"><label class="form-label">Nombre:</label><input type="text" class="form-control" id="prov-nombre"></div>
-                            <div class="mb-3"><label class="form-label">Teléfono:</label><input type="tel" class="form-control" id="prov-telefono"></div>
-                            <button class="btn btn-info text-white" id="btn-agregar-proveedor">Agregar Proveedor</button>
-                        </div>
-                    </div>
+    <h3>Agregar Nuevo Proveedor</h3>
+    <div class="card p-3 shadow admin-form"> <div class="mb-3">
+            <label class="form-label">Nombre del Proveedor:</label>
+            <input type="text" class="form-control" id="prov-nombre" placeholder="Ej: Sabritas S.A. de C.V.">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Teléfono:</label>
+            <input type="tel" class="form-control" id="prov-telefono" placeholder="Ej: 5512345678">
+        </div>
+        
+        <div class="row">
+            <div class="col-12 mb-3">
+                <label class="form-label">Calle:</label>
+                <input type="text" class="form-control" id="prov-calle">
+            </div>
+            <div class="col-4 mb-3">
+                <label class="form-label">Número:</label>
+                <input type="text" class="form-control" id="prov-numero">
+            </div>
+            <div class="col-8 mb-3">
+                <label class="form-label">Colonia:</label>
+                <input type="text" class="form-control" id="prov-colonia">
+            </div>
+            <div class="col-6 mb-3">
+                <label class="form-label">Código Postal:</label>
+                <input type="text" class="form-control" id="prov-cp">
+            </div>
+        </div>
+        <button class="btn btn-info text-white w-100" id="btn-agregar-proveedor">
+            Agregar Proveedor
+        </button>
+    </div>
+</div>
                 </div>
             </section>
 
