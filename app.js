@@ -525,6 +525,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 cargarProductos();  
                 cargarProveedores();
                 cargarGraficaStock();
+                cargarKPIsVentas();
+                cargarGraficaVentas();
+    
                 break;
 
             case 'Cajero':
@@ -632,5 +635,62 @@ async function cargarGraficaStock() {
         });
     } catch (error) {
         console.error('Error:', error);
+    }
+}
+
+// --- FUNCIONES PARA EL REPORTE DE VENTAS ---
+
+async function cargarKPIsVentas() {
+    try {
+        const respuesta = await fetch(`${API_URL}/api/reporte-kpis`);
+        const datos = await respuesta.json();
+
+        // Formateador para pesos mexicanos
+        const formateador = new Intl.NumberFormat('es-MX', {
+            style: 'currency', currency: 'MXN'
+        });
+
+        // Llenamos los cuadros de texto con los IDs que pusimos en el HTML
+        document.getElementById('kpi-total-dinero').textContent = 
+            datos.total_ingresos ? formateador.format(datos.total_ingresos) : '$0.00';
+            
+        document.getElementById('kpi-total-ventas').textContent = 
+            datos.total_transacciones || '0';
+    } catch (error) {
+        console.error('Error cargando KPIs:', error);
+    }
+}
+
+async function cargarGraficaVentas() {
+    try {
+        const respuesta = await fetch(`${API_URL}/api/reporte-top-ventas`);
+        const datos = await respuesta.json();
+
+        const etiquetas = datos.map(item => item.nombre_producto);
+        const valores = datos.map(item => item.total_unidades_vendidas);
+
+        const ctx = document.getElementById('graficaVentas').getContext('2d');
+        
+        // Creamos la gráfica de "Top Ventas"
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: etiquetas,
+                datasets: [{
+                    label: 'Unidades Vendidas',
+                    data: valores,
+                    backgroundColor: 'rgba(28, 200, 138, 0.7)', // Color verde profesional
+                    borderColor: 'rgba(28, 200, 138, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    } catch (error) {
+        console.error('Error gráfica ventas:', error);
     }
 }
