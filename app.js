@@ -590,19 +590,20 @@ if (btnLogout) {
 
 // 1. Función para navegar entre secciones (Modularización)
 function mostrarSeccion(idSeccion) {
-    const dashboard = document.getElementById('sec-dashboard');
-    const gestion = document.getElementById('sec-gestion');
+    // Ocultar las 3 secciones
+    document.getElementById('sec-dashboard').style.display = 'none';
+    document.getElementById('sec-gestion').style.display = 'none';
+    document.getElementById('sec-pos').style.display = 'none';
 
+    // Mostrar solo la elegida
+    document.getElementById('sec-' + idSeccion).style.display = 'block';
+    
+    // Si regresas al tablero, refrescar gráficas
     if (idSeccion === 'dashboard') {
-        dashboard.style.display = 'block';
-        gestion.style.display = 'none';
-        // Refrescamos las gráficas para que se ajusten al tamaño
         cargarGraficaStock();
+        cargarKPIsVentas();
         cargarGraficaVentas();
         cargarReportesTemporales();
-    } else {
-        dashboard.style.display = 'none';
-        gestion.style.display = 'block';
     }
 }
 
